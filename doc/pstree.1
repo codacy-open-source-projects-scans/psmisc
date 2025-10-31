@@ -1,0 +1,183 @@
+.\"
+.\" Copyright 1993-2002 Werner Almesberger
+.\"           2002-2025 Craig Small
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\"
+.TH PSTREE 1 2025-10-21 psmisc "User Commands"
+.SH NAME
+pstree \- display a tree of processes
+.SH SYNOPSIS
+.B pstree
+.RI [ option " .\|.\|.\|\&]"
+.RI [ pid " , " user ]
+.SH DESCRIPTION
+.B pstree
+shows running processes as a tree.  The tree is rooted at either
+.I pid
+or
+.B init
+if
+.I pid
+is omitted.  If a user name is specified, all process trees rooted at
+processes owned by that user are shown.
+.PP
+.B pstree
+visually merges identical branches by putting them in square brackets
+and prefixing them with the repetition count, e.g.
+.nf
+.sp
+    init\-+\-getty
+         |\-getty
+         |\-getty
+         `\-getty
+.sp
+.fi
+becomes
+.nf
+.sp
+    init\-\-\-4*[getty]
+.sp
+.fi
+.PP
+.PP
+Child threads of a process are found under the parent process and are
+shown with the process name in curly braces, e.g.
+.nf
+.sp
+    icecast2\-\-\-13*[{icecast2}]
+.sp
+.fi
+.PP
+If
+.B pstree
+is called as
+.B pstree.x11
+then it will prompt the user at the end of the line to press return and
+will not return until that has happened.  This is useful for when
+.B pstree
+is run in a xterminal.
+.PP
+Certain kernel or mount parameters, such as the \fIhidepid\fR option for procfs,
+will hide information for some processes. In these situations
+.B pstree
+will attempt to build the tree without this information, showing process
+names as question marks.
+
+.SH OPTIONS
+.TP
+\fB\-a\fR, \fB\-\-arguments\fR
+Show command line arguments.  If the command line of a process is
+swapped out, that process is shown in parentheses.
+.B \-a
+implicitly disables compaction for processes but not threads.
+.TP
+\fB\-A\fR, \fB\-\-ascii\fR
+Use ASCII characters to draw the tree.
+.TP
+\fB\-c\fR, \fB\-\-compact\-not\fR
+Disable compaction of identical subtrees.  By default, subtrees are
+compacted whenever possible.
+.TP
+\fB\-C\fR, \fB\-\-color=\fITYPE\fR
+Color the process name by given attribute. Currently \fBpstree\fR
+only accepts the value \fBage\fR which colors by process age.
+Processes newer than 60 seconds are green,
+newer than an hour yellow and the remaining red.
+.TP
+\fB\-g\fR, \fB\-\-show\-pgids\fR
+Show PGIDs.  Process Group IDs are shown as decimal numbers in
+parentheses after each process name.
+If both PIDs and PGIDs are displayed then PIDs are shown first.
+.TP
+\fB\-G\fR, \fB\-\-vt100\fR
+Use VT100 line drawing characters.
+.TP
+\fB\-h\fR, \fB\-\-hightlight\-all\fR
+Highlight the current process and its ancestors.  This is a no-op if
+the terminal doesn't support highlighting or if neither the current
+process nor any of its ancestors are in the subtree being shown.
+.TP
+\fB\-H\fR, \fB\-\-highlight\-pid=\fIPID\fR
+Like
+.BR \-h ,
+but highlight the specified process instead.  Unlike with
+.BR \-h ,
+.B pstree
+fails when using
+.B \-H
+if highlighting is not
+available.
+.TP
+\fB\-k\fR, \fB\-\-kthreads\fR
+Show kernel threads.
+.TP
+\fB\-l\fR, \fB\-\-long\fR
+Display long lines.  By default, lines are truncated to either the COLUMNS
+environment variable or the display width.  If neither of these methods work,
+the default of 132 columns is used.
+.TP
+\fB\-n\fR, \fB\-\-numeric\-sort\fR
+Sort processes with the same parent by PID instead of by name. 
+(Numeric sort.)
+.TP
+\fB\-N\fR, \fB\-\-ns-sort=\fITYPE\fR
+Show individual trees for each namespace of \fITYPE\fR.  The
+available types are:
+.IR ipc ", " mnt ", " net ", " pid ", " time ", " user ", " uts .
+Regular users don't
+have access to other users' processes information, so the output will be
+limited.
+.TP
+\fB\-p\fR, \fB\-\-show\-pids\fR
+Show PIDs.  PIDs are shown as decimal numbers in parentheses after each
+process name.
+.B \-p
+implicitly disables compaction.
+.TP
+\fB\-P\fR \fB\-\-show\-paths\fR
+Show the full path to the running process on disk.
+.TP
+\fB\-s\fR, \fB\-\-show\-parents\fR
+Show parent processes of the specified process.
+.TP
+\fB\-S\fR, \fB\-\-ns\-changes\fR
+Show namespaces transitions.  Like \fB\-N\fR, the output is limited when running
+as a regular user.
+.TP
+\fB\-t\fR, \fB\-\-thread\-names\fR
+Show full names for threads when available.
+.TP
+\fB\-T\fR, \fB\-\-hide\-threads\fR
+Hide threads and only show processes.
+.TP
+\fB\-u\fR, \fB\-\-uid\-changes\fR
+Show uid transitions.  Whenever the uid of a process differs from the
+uid of its parent, the new uid is shown in parentheses after the
+process name.
+.TP
+\fB\-U\fR, \fB\-\-unicode\fR
+Use UTF-8 (Unicode) line drawing characters.  Under Linux 1.1-54 and
+above, UTF-8 mode is entered on the console with
+.B echo \-e '\\033%8'
+and left with
+.BR "echo \-e '\\033%@'" .
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Display version information.
+.TP
+\fB\-Z\fR, \fB\-\-security\-context\fR
+Show the current security attributes of the process. For SELinux systems this
+will be the security context.
+.SH FILES
+.TP
+/proc
+location of the proc file system
+.SH BUGS
+Some character sets may be incompatible with the VT100 characters.
+.SH "SEE ALSO"
+.BR ps (1),
+.BR top (1),
+.BR proc (5).
